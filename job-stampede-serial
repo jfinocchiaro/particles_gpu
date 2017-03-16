@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -A TG-CCR140008
+#SBATCH -A TG-CCR130008
 #SBATCH -J particle-serial
 #SBATCH -o particle-serial.stdout
 #SBATCH -n 1         
