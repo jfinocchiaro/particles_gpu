@@ -5,5 +5,8 @@
 #SBATCH -n 1         
 #SBATCH -p gpu
 #SBATCH -t 00:10:00     
+#SBATCH --mail-type=END
+#SBATCH --mail-user=22jjf22@gmail.com
+
 ibrun ./gpu -n 2000 -o gpu.txt
 ./autocorrect -s gpu.txt

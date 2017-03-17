@@ -1,0 +1,9 @@
+TACC: Starting up job 8365122
+TACC: Setting up parallel environment for MVAPICH2+mpispawn.
+TACC: Starting parallel tasks...
+[c442-201.stampede.tacc.utexas.edu:mpispawn_0][spawn_processes] Failed to execvp() './gpu': No such file or directory (2)
+[c442-201.stampede.tacc.utexas.edu:mpispawn_0][child_handler] MPI process (rank: 0, pid: 46725) exited with status 1
+TACC: MPI job exited with code: 1
+ 
+TACC: Shutdown complete. Exiting.
+/tmp/slurmd/job8365122/slurm_script: line 9: ./autocorrect: Permission denied
