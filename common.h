@@ -14,10 +14,10 @@ typedef struct
 {
   double x;
   double y;
-  double vx;
-  double vy;
-  double ax;
-  double ay;
+  double vx; //velocity in x direction
+  double vy; //velocity in y direction
+  double ax; //acceleration in x direction
+  double ay; //acceleration in y direction
 } particle_t;
 
 //
