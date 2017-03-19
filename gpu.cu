@@ -4,6 +4,9 @@
 #include <math.h>
 #include <cuda.h>
 #include "common.h"
+#include <vector>
+
+using std::vector;
 
 //repeated from common.cu
 #define density 0.0005
@@ -18,6 +21,23 @@ extern double size;
 
 //  benchmarking program
 
+
+__host__ void buildBins(vector<bin_t>& bins, particle_t* particles, int n)
+{
+  double gridSize, binSize;
+  int binNum;
+
+  gridSize = sqrt(n * density);
+  binSize = cutoff * 2;
+  binNum = int(gridSize/binSize) + 1;
+  bins.resize(binNum * binNum);
+  for (int i = 0; i < n; ++i)
+  {
+    int x = int(particles[i].x / binSize);
+    int y = int(particles[i].y / binSize);
+    bins[x*binNum + y].push_back(particles[i]);
+  }
+}
 
 __device__ void apply_force_gpu(particle_t &particle, particle_t &neighbor)
 {
@@ -48,8 +68,8 @@ __global__ void compute_forces_gpu(particle_t * particles, int n) //n is number 
   particles[tid].ax = particles[tid].ay = 0; //initialize acceleration to 0
   for(int j = 0 ; j < n ; j++) //for every particle
   {
-    double distance = (particles[tid].x - particles[j].x) * (particles[tid].x - particles[j].x) + (particles[tid].y - particles[j].y) *(particles[tid].y - particles[j].y);
-    if(distance < cutoff)
+    //double distance = (particles[tid].x - particles[j].x) * (particles[tid].x - particles[j].x) + (particles[tid].y - particles[j].y) *(particles[tid].y - particles[j].y);
+    //if(distance < cutoff)
       apply_force_gpu(particles[tid], particles[j]); //apply force to every other particle
   }
 

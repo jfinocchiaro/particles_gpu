@@ -1,6 +1,10 @@
 #ifndef __CS267_COMMON_H__
 #define __CS267_COMMON_H__
 
+
+#include <vector>
+#include<stdio.h>
+
 //
 //  saving parameters
 //
@@ -19,6 +23,8 @@ typedef struct
   double ax; //acceleration in x direction
   double ay; //acceleration in y direction
 } particle_t;
+
+typedef std::vector<particle_t>bin_t;
 
 //
 //  timing routines
