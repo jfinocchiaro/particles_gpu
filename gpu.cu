@@ -65,8 +65,10 @@ __global__ void compute_forces_gpu(particle_t * particles, int n) //n is number 
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
   if(tid >= n) return;
 
+  bin_t& thisBin = particle_bins[tid];
+
   particles[tid].ax = particles[tid].ay = 0; //initialize acceleration to 0
-  for(int j = 0 ; j < n ; j++) //for every particle
+  for(int j = 0 ; j < thisBin.size() ; j++) //for every particle
   {
     //double distance = (particles[tid].x - particles[j].x) * (particles[tid].x - particles[j].x) + (particles[tid].y - particles[j].y) *(particles[tid].y - particles[j].y);
     //if(distance < cutoff)
@@ -114,6 +116,7 @@ __global__ void move_gpu (particle_t * particles, int n, double size)
 
 int main( int argc, char **argv )
 {
+
     // This takes a few seconds to initialize the runtime
     cudaThreadSynchronize();  // Blocks until the device has completed all preceding requested tasks. Error if one of the preceding tasks fails.
 
@@ -132,14 +135,15 @@ int main( int argc, char **argv )
 
     FILE *fsave = savename ? fopen( savename, "w" ) : NULL;
     particle_t *particles = (particle_t*) malloc( n * sizeof(particle_t) ); //linked list of n particles (pointer to the top)
+    vector<bin_t> particle_bins;
 
     // GPU particle data structure
     particle_t * d_particles; //destination of CUDAmemcpy, used on GPU
     cudaMalloc((void **) &d_particles, n * sizeof(particle_t)); //cuda stuff... memory allocation
 
     set_size( n ); // sets the double size equal to sqrt( density * n )
-
     init_particles( n, particles ); //initialize all 1000 particles or whatever
+    buildBins(particle_bins, particles, n); //builds bins for force to only be applied to nearby particles
 
     cudaThreadSynchronize(); // Blocks until the device has completed all preceding requested tasks. Error if one of the preceding tasks fails.
     double copy_time = read_timer( ); //gets the current time
