@@ -2,8 +2,7 @@
 #define __CS267_COMMON_H__
 
 
-#include <vector>
-#include<stdio.h>
+
 
 //
 //  saving parameters
@@ -24,7 +23,22 @@ typedef struct
   double ay; //acceleration in y direction
 } particle_t;
 
-typedef std::vector<particle_t>bin_t;
+struct linkedlist
+{
+	linkedlist * next;
+	particle_t * value;
+};
+
+typedef struct linkedlist linkedlist_t;
+
+struct grid
+{
+	int size;
+	linkedlist_t ** grid;
+};
+
+typedef struct grid grid_t;
+
 
 //
 //  timing routines

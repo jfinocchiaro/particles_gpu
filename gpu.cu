@@ -4,9 +4,7 @@
 #include <math.h>
 #include <cuda.h>
 #include "common.h"
-#include <vector>
 
-using std::vector;
 
 //repeated from common.cu
 #define density 0.0005
@@ -21,22 +19,48 @@ extern double size;
 
 //  benchmarking program
 
+__host__ void grid_init(grid_t & grid, int size)
+{
+    grid.size = size;
 
-__host__ void buildBins(vector<bin_t>& bins, particle_t* particles, int n)
+    // Initialize grid
+    grid.grid = (linkedlist**) malloc(sizeof(linkedlist*) * size * size);
+
+    if (grid.grid == NULL)
+    {
+        fprintf(stderr, "Error: Could not allocate memory for the grid!\n");
+        exit(1);
+    }
+}
+__host__ void grid_add (grid_t & grid, particle_t * p)
+{
+    int gridCoord = grid_coord_flat(grid.size, p->x, p->y);
+
+    linkedlist_t * newElement = (linkedlist_t *) malloc(sizeof(linkedlist));
+    newElement->value = p;
+
+    newElement->next = grid.grid[gridCoord];
+
+    grid.grid[gridCoord] = newElement;
+
+
+}
+
+__host__ void buildGrids(grid_t grid , particle_t* particles, int n)
 {
   double gridSize, binSize;
   int binNum;
 
-  gridSize = sqrt(n * density);
-  binSize = cutoff * 2;
-  binNum = int(gridSize/binSize) + 1;
-  bins.resize(binNum * binNum);
-  for (int i = 0; i < n; ++i)
-  {
-    int x = int(particles[i].x / binSize);
-    int y = int(particles[i].y / binSize);
-    bins[x*binNum + y].push_back(particles[i]);
-  }
+  int gridSize = (size/cutoff) + 1;
+    grid_t grid;
+    //initialize the grid with given params
+    grid_init(grid, gridSize);
+    //add all particles to grid
+    for (int i = 0; i < n; ++i)
+    {
+        grid_add(grid, &particles[i]);
+    }
+
 }
 
 __device__ void apply_force_gpu(particle_t &particle, particle_t &neighbor)
@@ -59,16 +83,16 @@ __device__ void apply_force_gpu(particle_t &particle, particle_t &neighbor)
 
 }
 
-__host__ __global__ void compute_forces_gpu(vector<bin_t>& particle_bins, particle_t * particles, int n) //n is number of particles
+__global__ void compute_forces_gpu( grid_t grid, particle_t * particles, int n) //n is number of particles
 {
   // Get thread (particle) ID (one row to represent entire block)
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
   if(tid >= n) return;
 
-  bin_t& thisBin = particle_bins[tid];
+  int particlesInBin = grid.size;
 
   particles[tid].ax = particles[tid].ay = 0; //initialize acceleration to 0
-  for(int j = 0 ; j < thisBin.size() ; j++) //for every particle
+  for(int j = 0 ; j < particlesInBin ; j++) //for every particle
   {
     //double distance = (particles[tid].x - particles[j].x) * (particles[tid].x - particles[j].x) + (particles[tid].y - particles[j].y) *(particles[tid].y - particles[j].y);
     //if(distance < cutoff)
@@ -135,7 +159,8 @@ int main( int argc, char **argv )
 
     FILE *fsave = savename ? fopen( savename, "w" ) : NULL;
     particle_t *particles = (particle_t*) malloc( n * sizeof(particle_t) ); //linked list of n particles (pointer to the top)
-    vector<bin_t> particle_bins;
+    grid_t grid;
+    grid_init(grid, gridSize);
 
     // GPU particle data structure
     particle_t * d_particles; //destination of CUDAmemcpy, used on GPU
@@ -143,7 +168,7 @@ int main( int argc, char **argv )
 
     set_size( n ); // sets the double size equal to sqrt( density * n )
     init_particles( n, particles ); //initialize all 1000 particles or whatever
-    buildBins(particle_bins, particles, n); //builds bins for force to only be applied to nearby particles
+    buildGrids(grid, particles, n); //builds bins for force to only be applied to nearby particles
 
     cudaThreadSynchronize(); // Blocks until the device has completed all preceding requested tasks. Error if one of the preceding tasks fails.
     double copy_time = read_timer( ); //gets the current time
@@ -165,7 +190,7 @@ int main( int argc, char **argv )
 
          //  compute forces
 	       int blks = (n + NUM_THREADS - 1) / NUM_THREADS; //blocks? see how this gets used
-	       compute_forces_gpu <<< blks, NUM_THREADS >>> (particle_bins, d_particles, n); // call compute_forces_gpu , execution configuration, params
+	       compute_forces_gpu <<< blks, NUM_THREADS >>> (grid, d_particles, n); // call compute_forces_gpu , execution configuration, params
 
 
         //  move particles
