@@ -59,7 +59,7 @@ __device__ void apply_force_gpu(particle_t &particle, particle_t &neighbor)
 
 }
 
-__global__ void compute_forces_gpu(particle_t * particles, int n) //n is number of particles
+__host__ __global__ void compute_forces_gpu(vector<bin_t>& particle_bins, particle_t * particles, int n) //n is number of particles
 {
   // Get thread (particle) ID (one row to represent entire block)
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
@@ -165,7 +165,7 @@ int main( int argc, char **argv )
 
          //  compute forces
 	       int blks = (n + NUM_THREADS - 1) / NUM_THREADS; //blocks? see how this gets used
-	       compute_forces_gpu <<< blks, NUM_THREADS >>> (d_particles, n); // call compute_forces_gpu , execution configuration, params
+	       compute_forces_gpu <<< blks, NUM_THREADS >>> (particle_bins, d_particles, n); // call compute_forces_gpu , execution configuration, params
 
 
         //  move particles
