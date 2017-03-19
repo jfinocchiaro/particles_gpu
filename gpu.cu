@@ -21,6 +21,11 @@ extern int binNum;
 
 //  benchmarking program
 
+__host__ static int grid_coord(double c)
+{
+    return (int)floor(c / cutoff);
+}
+
 __host__ static int grid_coord_flat(int size, double x, double y)
 {
     return grid_coord(x) * size + grid_coord(y);
@@ -166,7 +171,7 @@ int main( int argc, char **argv )
     FILE *fsave = savename ? fopen( savename, "w" ) : NULL;
     particle_t *particles = (particle_t*) malloc( n * sizeof(particle_t) ); //linked list of n particles (pointer to the top)
     grid_t grid;
-    grid_init(grid, gridSize);
+    
 
     // GPU particle data structure
     particle_t * d_particles; //destination of CUDAmemcpy, used on GPU
