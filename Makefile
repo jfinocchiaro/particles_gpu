@@ -6,17 +6,21 @@ CFLAGS = -O3 -arch=sm_35
 NVCCFLAGS = -O3 -arch=sm_35
 LIBS =
 
-TARGETS = serial
+TARGETS = serial gpu
 
 all:	$(TARGETS)
 
 serial: serial.o common.o
 	$(CC) -o $@ $(LIBS) serial.o common.o
+gpu:	gpu.o common.o
+	$(CC) -o $@ $(LIBS) gpu.o common.o
 
 serial.o: serial.cu common.h
 	$(CC) -c $(CFLAGS) serial.cu
 common.o: common.cu common.h
 	$(CC) -c $(CFLAGS) common.cu
+gpu.o: gpu.cu common.h
+	$(CC) -c $(CFLAGS) gpu.cu
 
 clean:
 	rm -f *.o $(TARGETS) *.stdout *.txt
