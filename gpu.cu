@@ -15,9 +15,9 @@
 #define NUM_THREADS 256
 
 extern double size;
-//
+
 //  benchmarking program
-//
+
 
 __device__ void apply_force_gpu(particle_t &particle, particle_t &neighbor)
 {
@@ -47,7 +47,12 @@ __global__ void compute_forces_gpu(particle_t * particles, int n) //n is number 
 
   particles[tid].ax = particles[tid].ay = 0; //initialize acceleration to 0
   for(int j = 0 ; j < n ; j++) //for every particle
-    apply_force_gpu(particles[tid], particles[j]); //apply force to every other particle
+  {
+    double distance = (particles[tid].x - particles[j].x) * (particles[tid].x - particles[j].x) + (particles[tid].y - particles[j].y) *(particles[tid].y - particles[j].y);
+    if(distance < cutoff)
+      apply_force_gpu(particles[tid], particles[j]); //apply force to every other particle
+  }
+
 
 }
 
@@ -146,12 +151,12 @@ int main( int argc, char **argv )
         //  save if necessary
         //
         if( fsave && (step%SAVEFREQ) == 0 ) {
-	    // Copy the particles back to the CPU
+	         // Copy the particles back to the CPU
             cudaMemcpy(particles, d_particles, n * sizeof(particle_t), cudaMemcpyDeviceToHost); //brings particles back to CPU
             save( fsave, n, particles); //save progress
 	         }
     }
-    cudaThreadSynchronize();
+    cudaThreadSynchronize(); //Blocks until the device has completed all preceding requested tasks. Error if one of the preceding tasks fails.
     simulation_time = read_timer( ) - simulation_time;
 
     printf( "CPU-GPU copy time = %g seconds\n", copy_time);
