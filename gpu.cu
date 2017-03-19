@@ -16,8 +16,15 @@
 #define NUM_THREADS 256
 
 extern double size;
+extern double gridSize, binSize;
+extern int binNum;
 
 //  benchmarking program
+
+__host__ static int grid_coord_flat(int size, double x, double y)
+{
+    return grid_coord(x) * size + grid_coord(y);
+}
 
 __host__ void grid_init(grid_t & grid, int size)
 {
@@ -48,10 +55,9 @@ __host__ void grid_add (grid_t & grid, particle_t * p)
 
 __host__ void buildGrids(grid_t grid , particle_t* particles, int n)
 {
-  double gridSize, binSize;
-  int binNum;
 
-  int gridSize = (size/cutoff) + 1;
+
+    int gridSize = (size/cutoff) + 1;
     grid_t grid;
     //initialize the grid with given params
     grid_init(grid, gridSize);
