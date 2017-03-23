@@ -63,7 +63,7 @@ __host__ void buildGrids(grid_t grid , particle_t* particles, int n)
 
 
     int gridSize = (size/cutoff) + 1;
-    grid_t grid;
+
     //initialize the grid with given params
     grid_init(grid, gridSize);
     //add all particles to grid
@@ -104,10 +104,12 @@ __global__ void compute_forces_gpu( grid_t grid, particle_t * particles, int n) 
 
   particles[tid].ax = particles[tid].ay = 0; //initialize acceleration to 0
   for(int j = 0 ; j < particlesInBin ; j++) //for every particle
+  //while(neighbor != NULL)
   {
     //double distance = (particles[tid].x - particles[j].x) * (particles[tid].x - particles[j].x) + (particles[tid].y - particles[j].y) *(particles[tid].y - particles[j].y);
     //if(distance < cutoff)
-      apply_force_gpu(particles[tid], particles[j]); //apply force to every other particle
+      apply_force_gpu(particles[tid], grid[j]); //apply force to every other particle
+      //neighbor = neighbor->next;
   }
 
 
@@ -171,7 +173,7 @@ int main( int argc, char **argv )
     FILE *fsave = savename ? fopen( savename, "w" ) : NULL;
     particle_t *particles = (particle_t*) malloc( n * sizeof(particle_t) ); //linked list of n particles (pointer to the top)
     grid_t grid;
-    
+
 
     // GPU particle data structure
     particle_t * d_particles; //destination of CUDAmemcpy, used on GPU
