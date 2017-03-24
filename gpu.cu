@@ -100,15 +100,14 @@ __global__ void compute_forces_gpu( grid_t gridlist, particle_t * particles, int
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
   if(tid >= n) return;
 
-  grid currBin = gridlist.grid;
-  int particlesInBin = currBin.size.;
+  linkedlist ** currBin = gridlist.grid;
+  int particlesInBin = currBin.size;
 
   particles[tid].ax = particles[tid].ay = 0; //initialize acceleration to 0
+  
   for(int j = 0 ; j < particlesInBin ; j++) //for every particle
   {
-    //double distance = (particles[tid].x - particles[j].x) * (particles[tid].x - particles[j].x) + (particles[tid].y - particles[j].y) *(particles[tid].y - particles[j].y);
-    //if(distance < cutoff)
-      apply_force_gpu(particles[tid], grid[j]); //apply force to every other particle
+      apply_force_gpu(particles[tid], currBin[j]); //apply force to every other particle
 
   }
 
