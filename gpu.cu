@@ -94,22 +94,22 @@ __device__ void apply_force_gpu(particle_t &particle, particle_t &neighbor)
 
 }
 
-__global__ void compute_forces_gpu( grid_t grid, particle_t * particles, int n) //n is number of particles
+__global__ void compute_forces_gpu( grid_t gridlist, particle_t * particles, int n) //n is number of particles
 {
   // Get thread (particle) ID (one row to represent entire block)
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
   if(tid >= n) return;
 
-  int particlesInBin = grid.size;
+  grid currBin = gridlist.grid;
+  int particlesInBin = currBin.size.;
 
   particles[tid].ax = particles[tid].ay = 0; //initialize acceleration to 0
   for(int j = 0 ; j < particlesInBin ; j++) //for every particle
-  //while(neighbor != NULL)
   {
     //double distance = (particles[tid].x - particles[j].x) * (particles[tid].x - particles[j].x) + (particles[tid].y - particles[j].y) *(particles[tid].y - particles[j].y);
     //if(distance < cutoff)
       apply_force_gpu(particles[tid], grid[j]); //apply force to every other particle
-      //neighbor = neighbor->next;
+
   }
 
 
