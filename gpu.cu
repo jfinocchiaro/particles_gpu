@@ -107,8 +107,8 @@ __global__ void compute_forces_gpu( grid_t grid, particle_t * particles, int n) 
   
   for(int j = 0 ; j < particlesInBin ; j++) //for every particle
   {
-      apply_force_gpu(particles[tid], *(currBin).value); //apply force to every other particle
-
+      apply_force_gpu(particles[tid], currBin.value); //apply force to every other particle
+      currBin = currBin->next;
   }
 
 
