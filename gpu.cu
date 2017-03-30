@@ -58,7 +58,7 @@ __host__ void grid_add (grid_t & grid, particle_t * p)
 
 }
 
-__host__ void buildGrids(grid_t grid , particle_t* particles, int n)
+__host__ grid_t buildGrids(grid_t grid , particle_t* particles, int n)
 {
 
 
@@ -71,6 +71,7 @@ __host__ void buildGrids(grid_t grid , particle_t* particles, int n)
     {
         grid_add(grid, &particles[i]);
     }
+    return grid;
 
 }
 
@@ -100,16 +101,16 @@ __global__ void compute_forces_gpu( grid_t grid, particle_t * particles, int n) 
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
   if(tid >= n) return;
 
-//  int particlesInBin = grid.size;
   linkedlist_t * current = *(grid).grid;
-
+printf("Number of particles in current grid:  %d\n", grid.size);
   particles[tid].ax = particles[tid].ay = 0; //initialize acceleration to 0
   
-//  for(int j = 0 ; j < particlesInBin ; j++) //for every particle
+
   while(current->value != NULL)
   {
       apply_force_gpu(particles[tid], *(current->value)); //apply force to every other particle
       current = current->next;
+printf("Force applied!\n");
   }
 
 
@@ -181,7 +182,7 @@ int main( int argc, char **argv )
 
     set_size( n ); // sets the double size equal to sqrt( density * n )
     init_particles( n, particles ); //initialize all 1000 particles or whatever
-    buildGrids(grid, particles, n); //builds bins for force to only be applied to nearby particles
+    grid = buildGrids(grid, particles, n); //builds bins for force to only be applied to nearby particles
 
     cudaThreadSynchronize(); // Blocks until the device has completed all preceding requested tasks. Error if one of the preceding tasks fails.
     double copy_time = read_timer( ); //gets the current time
