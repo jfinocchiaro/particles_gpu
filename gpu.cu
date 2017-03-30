@@ -100,15 +100,16 @@ __global__ void compute_forces_gpu( grid_t grid, particle_t * particles, int n) 
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
   if(tid >= n) return;
 
-  linkedlist_t ** currBin = grid.grid;
-  int particlesInBin = grid.size;
+//  int particlesInBin = grid.size;
+  linkedlist_t * current = *(grid).grid;
 
   particles[tid].ax = particles[tid].ay = 0; //initialize acceleration to 0
   
-  for(int j = 0 ; j < particlesInBin ; j++) //for every particle
+//  for(int j = 0 ; j < particlesInBin ; j++) //for every particle
+  while(current->value != NULL)
   {
-      apply_force_gpu(particles[tid], currBin.value); //apply force to every other particle
-      currBin = currBin->next;
+      apply_force_gpu(particles[tid], *(current->value)); //apply force to every other particle
+      current = current->next;
   }
 
 
@@ -201,7 +202,7 @@ int main( int argc, char **argv )
     {
 
          //  compute forces
-	       int blks = (n + NUM_THREADS - 1) / NUM_THREADS; //blocks? see how this gets used
+	       int blks = (n + NUM_THREADS - 1) / NUM_THREADS; //blocks? see how this gets used.  jk. in line below.
 	       compute_forces_gpu <<< blks, NUM_THREADS >>> (grid, d_particles, n); // call compute_forces_gpu , execution configuration, params
 
 
