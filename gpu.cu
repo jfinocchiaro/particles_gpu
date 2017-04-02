@@ -19,6 +19,7 @@ extern double size;
 extern double gridSize, binSize;
 extern int binNum;
 
+
 //  benchmarking program
 
 __host__ static int grid_coord(double c)
@@ -58,9 +59,9 @@ __host__ void grid_add (grid_t & grid, particle_t * p)
 
 }
 
-__host__ grid_t buildGrids( particle_t* particles, int n)
+__host__ void buildGrids( particle_t* particles, int n, grid_t & grid)
 {
-    grid_t grid;
+    
 
     int gridSize = (size/cutoff) + 1;
 
@@ -73,7 +74,7 @@ __host__ grid_t buildGrids( particle_t* particles, int n)
     }
 
 
-    return grid;
+  
 }
 
 __device__ void apply_force_gpu(particle_t &particle, particle_t &neighbor)
@@ -102,9 +103,10 @@ __global__ void compute_forces_gpu( grid_t grid, particle_t * particles, int n) 
   // Get thread (particle) ID (one row to represent entire block)
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
   if(tid >= n) return;
-
-printf("blah: %d\n", grid.grid[tid]);
-  linkedlist_t * current = grid.grid[tid];
+  
+  int gridCoord = ((int)floor(particles->x/cutoff)) * grid.size + particles->y;
+printf("Current grid: %d\n", gridCoord);
+  linkedlist_t * current = grid.grid[gridCoord];
 printf("Number of particles in current grid:  %d\n", grid.size);
   particles[tid].ax = particles[tid].ay = 0; //initialize acceleration to 0
 
@@ -185,7 +187,7 @@ int main( int argc, char **argv )
 
     set_size( n ); // sets the double size equal to sqrt( density * n )
     init_particles( n, particles ); //initialize all 1000 particles or whatever
-    grid = buildGrids(particles, n); //builds bins for force to only be applied to nearby particles
+    buildGrids(particles, n, grid); //builds bins for force to only be applied to nearby particles
 
     cudaThreadSynchronize(); // Blocks until the device has completed all preceding requested tasks. Error if one of the preceding tasks fails.
     double copy_time = read_timer( ); //gets the current time
