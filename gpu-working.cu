@@ -98,20 +98,19 @@ __device__ void apply_force_gpu(particle_t &particle, particle_t &neighbor)
 
 __global__ void compute_forces_gpu( grid_t grid, particle_t * particles, int n) //n is number of particles
 {
-
+printf("In compute forces\n");
   // Get thread (particle) ID (one row to represent entire block)
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
   if(tid >= n) return;
-
-//printf("blah: %d\n", grid);
-  linkedlist_t * current = grid.grid;
+printf("Past return\n");
+  linkedlist_t * current = *(grid).grid;
 printf("Number of particles in current grid:  %d\n", grid.size);
   particles[tid].ax = particles[tid].ay = 0; //initialize acceleration to 0
 
 
   while(current->value != NULL)
   {
-      apply_force_gpu(particles[tid], current->value); //apply force to every other particle
+      apply_force_gpu(particles[tid], *(current->value)); //apply force to every other particle
       current = current->next;
 printf("Force applied!\n");
   }
