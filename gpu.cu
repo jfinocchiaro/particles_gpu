@@ -31,12 +31,12 @@ __host__ static int grid_coord_flat(int size, double x, double y)
     return grid_coord(x) * size + grid_coord(y);
 }
 
-__host__ void grid_init(grid_t & grid, int size)
+__host__ void grid_init(grid_t grid, int size)
 {
     grid.size = size;
 
     // Initialize grid
-    grid.grid = (linkedlist**) malloc(sizeof(linkedlist*) * size * size);
+    grid.grid = (linkedlist*) malloc(sizeof(linkedlist*) * size * size);
 
     if (grid.grid == NULL)
     {
@@ -44,11 +44,11 @@ __host__ void grid_init(grid_t & grid, int size)
         exit(1);
     }
 }
-__host__ void grid_add (grid_t & grid, particle_t * p)
+__host__ void grid_add (grid_t grid, particle_t * p)
 {
     int gridCoord = grid_coord_flat(grid.size, p->x, p->y);
 
-    linkedlist_t * newElement = (linkedlist_t *) malloc(sizeof(linkedlist));
+    linkedlist_t * newElement = (linkedlist_t *) malloc(sizeof(linkedlist*));
     newElement->value = p;
 
     newElement->next = grid.grid[gridCoord];
@@ -71,7 +71,7 @@ __host__ grid_t buildGrids( particle_t* particles, int n)
     {
         grid_add(grid, &particles[i]);
     }
-    
+
 
     return grid;
 }
@@ -109,10 +109,10 @@ printf("Number of particles in current grid:  %d\n", grid.size);
   particles[tid].ax = particles[tid].ay = 0; //initialize acceleration to 0
 
 
-  while(current->value != NULL)
+  while(current.value != NULL)
   {
-      apply_force_gpu(particles[tid], current->value); //apply force to every other particle
-      current = current->next;
+      apply_force_gpu(particles[tid], current.value); //apply force to every other particle
+      current = current.next;
 printf("Force applied!\n");
   }
 
