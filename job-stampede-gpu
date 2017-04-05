@@ -8,5 +8,5 @@
 #SBATCH --mail-type=END
 #SBATCH --mail-user=22jjf22@gmail.com
 
-ibrun ./gpu -n 500 -o gpu.txt
+ibrun ./gpu -n 2000 -o gpu.txt
 ./autocorrect -s gpu.txt
